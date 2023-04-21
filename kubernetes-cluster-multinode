@@ -1,0 +1,67 @@
+Installation of Multi-Node Kubernetes Cluster:
+
+Instance Type - t2.medium
+Instance Group - Amazon Linux
+
+Create 2 nodes at once, Give the name master to one node and slave to other node.
+
+Steps to be done on master node and worker nodes both:
+
+1. yum update -y
+2. yum install docker -y
+3. systemctl enable docker
+4. systemctl start docker
+5. systemctl status docker -----> This step should show docker services are ACTIVE.
+
+6. cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+
+7. sudo setenforce 0
+8. sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+9. sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+10. sudo systemctl enable --now kubelet
+11. systemctl restart kubelet
+
+
+Now, go to master node and execute below command: (Please check these command should only run on master node)
+
+1. kubeadm init --apiserver-advertise-address=<private-ip-of-master> --pod-network-cidr=192.168.0.0/16 ---> here you have to give private ip of you master node without brackets.
+
+Here, you will find a command like below:
+
+(1A) kubeadm join ............  ------>> copy this command as paste it somewhere else
+
+
+Now, exit from master node super user by exit command as below command will run as normal user:
+
+1. mkdir -p $HOME/.kube
+2. sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+3. sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+Now, go to worker node and paste the command (1A) generated at above step on super user (sudo su):
+
+The output will show ..... This node has joined the cluster.
+
+
+
+Go to master node again:
+
+1. kubectl get nodes
+
+it will show nodes not ready.
+
+2. curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml -O
+3. kubectl apply -f calico.yaml
+4. kubectl get nodes ----> it will show nodes in ready state after 2-3 minutes.
+
+
+Note: You can connect other worker node by kubeadm join command. (Upto 50 nodes)
+
