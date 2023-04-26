@@ -1,53 +1,21 @@
-import tkinter as tk
+from flask import Flask, render_template, request
 
-class UserForm(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
-        self.create_widgets()
+app = Flask(__name__)
 
-    def create_widgets(self):
-        # Create labels and entry fields for user input
-        self.name_label = tk.Label(self, text="Name:")
-        self.name_entry = tk.Entry(self)
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        # Process form data
+        name = request.form['name']
+        email = request.form['email']
+        message = request.form['message']
+        # Do something with the data (e.g. save to database)
 
-        self.email_label = tk.Label(self, text="Email:")
-        self.email_entry = tk.Entry(self)
+        # Render thank you page
+        return render_template('thankyou.html', name=name)
 
-        self.age_label = tk.Label(self, text="Age:")
-        self.age_entry = tk.Entry(self)
+    # Render form page
+    return render_template('form.html')
 
-        # Create a button to submit the form
-        self.submit_button = tk.Button(self, text="Submit", command=self.submit)
-
-        # Pack the labels, entry fields, and button into the frame
-        self.name_label.pack()
-        self.name_entry.pack()
-
-        self.email_label.pack()
-        self.email_entry.pack()
-
-        self.age_label.pack()
-        self.age_entry.pack()
-
-        self.submit_button.pack()
-
-    def submit(self):
-        # Get the user input from the entry fields
-        name = self.name_entry.get()
-        email = self.email_entry.get()
-        age = self.age_entry.get()
-
-        # Do something with the user input
-        print(f"Name: {name}")
-        print(f"Email: {email}")
-        print(f"Age: {age}")
-
-# Create a window and add the UserForm to it
-root = tk.Tk()
-user_form = UserForm(root)
-user_form.pack()
-
-# Start the main loop
-root.mainloop()
-
+if __name__ == '__main__':
+    app.run(debug=True)
